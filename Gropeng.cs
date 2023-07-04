@@ -19,19 +19,9 @@ namespace CleanCode
         public string Name { get; private set; }
         public int Age { get; private set; }
         
-        public void Move()
-        {
-            //Do move
-        }
-
         public void Attack()
         {
             //attack
-        }
-
-        public bool IsReloading()
-        {
-            throw new NotImplementedException();
         }
     }
 
@@ -39,6 +29,11 @@ namespace CleanCode
     {
         public int WeaponDamage { get; private set; }
         public float WeaponCooldown { get; private set; }
+
+        public bool IsReloading()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     class Movement
@@ -46,5 +41,10 @@ namespace CleanCode
         public float MovementDirectionX { get; private set; }
         public float MovementDirectionY { get; private set; }
         public float MovementSpeed { get; private set; }
+
+        public void Move()
+        {
+            //Do move
+        }
     }
 }
