@@ -5,6 +5,7 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,22 +13,24 @@ namespace CleanCode
 {
     class Uroven
     {
-        public MessageBox MessageBox;
+        private const int MaxSymbol = 10;
         private PasportTextbox _passportTextbox;
-        
+
+        public MessageBox MessageBox;
+
         private void checkButton_Click(object sender, EventArgs e)
         {
             string text = _passportTextbox.Text;
 
             if (text.Trim() == "")
             {
-                int num1 = (int)MessageBox.Show("Введите серию и номер паспорта");
+                int number = (int)MessageBox.Show("Введите серию и номер паспорта");
             }
             else
             {
-                string rawData = text.Trim().Replace(" ", string.Empty);
+                string rawData = FormatText(text);
 
-                if (rawData.Length < 10)
+                if (rawData.Length < MaxSymbol)
                 {
                     textResult.Text = "Неверный формат серии или номера паспорта";
                 }
@@ -70,7 +73,7 @@ namespace CleanCode
                         {
                             textResult.Text = notFoundText;
                         }
-                            
+
                         connection.Close();
                     }
                     catch (SQLiteException erorException)
@@ -82,6 +85,11 @@ namespace CleanCode
                     }
                 }
             }
+        }
+
+        private string FormatText(string text)
+        {
+            return text.Trim().Replace(" ", string.Empty);
         }
     }
 
@@ -98,3 +106,4 @@ namespace CleanCode
         public string Text;
     }
 }
+
