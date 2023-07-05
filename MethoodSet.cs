@@ -13,7 +13,7 @@ namespace CleanCode
             //Создание объекта на карте
         }
 
-        public static void GetChance()
+        public static void AssignChance()
         {
             _chance = Random.Range(0, 100);
         }
