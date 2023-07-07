@@ -17,6 +17,7 @@ namespace CleanCode
         private PasportTextbox _passportTextbox;
 
         public MessageBox MessageBox;
+        public CellRow textResult;
 
         private void checkButton_Click(object sender, EventArgs e)
         {
@@ -36,55 +37,66 @@ namespace CleanCode
                 }
                 else
                 {
-                    string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                    object resultHash = (object)Form1.ComputeSha256Hash(rawData);
-
-                    string commandText = string.Format("select * from passports where num='{0}' limit 1;", resultHash);
-                    string connectionString = string.Format("Data Source=" + path + "\\db.sqlite");
-
-                    try
-                    {
-                        SQLiteConnection connection = new SQLiteConnection(connectionString);
-                        connection.Open();
-
-                        SQLiteDataAdapter sqLiteDataAdapter = new SQLiteDataAdapter(new SQLiteCommand(commandText, connection));
-
-                        DataTable Table = new DataTable();
-
-                        string providedText = "По паспорту «" + this._passportTextbox.Text +
-                            "» доступ к бюллетеню на дистанционном электронном голосовании ПРЕДОСТАВЛЕН";
-                        string notProvidedText = "По паспорту «" + this._passportTextbox.Text +
-                                    "» доступ к бюллетеню на дистанционном электронном голосовании НЕ ПРЕДОСТАВЛЯЛСЯ";
-                        string notFoundText = "Паспорт «" + this._passportTextbox.Text +
-                                "» в списке участников дистанционного голосования НЕ НАЙДЕН";
-
-                        DataRowCollection rows = Table.Rows;
-
-                        sqLiteDataAdapter.Fill(Table);
-
-                        if (rows.Count > 0)
-                        {
-                            if (Convert.ToBoolean(rowsTable[0].ItemArray[1]))
-                                textResult.Text = providedText;
-                            else
-                                textResult.Text = notProvidedText;
-                        }
-                        else
-                        {
-                            textResult.Text = notFoundText;
-                        }
-
-                        connection.Close();
-                    }
-                    catch (SQLiteException erorException)
-                    {
-                        if (erorException.ErrorCode != 1)
-                            return;
-
-                        int number = (int)MessageBox.Show("Файл db.sqlite не найден. Положите файл в папку вместе с exe.");
-                    }
+                    PushInDataBase();
                 }
             }
+        }
+
+        private void PushInDataBase()
+        {
+            string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            object resultHash = (object)Form1.ComputeSha256Hash(rawData);
+
+            string commandText = string.Format("select * from passports where num='{0}' limit 1;", resultHash);
+            string connectionString = string.Format("Data Source=" + path + "\\db.sqlite");
+
+            try
+            {
+                string providedText = "По паспорту «" + this._passportTextbox.Text +
+                    "» доступ к бюллетеню на дистанционном электронном голосовании ПРЕДОСТАВЛЕН";
+                string notProvidedText = "По паспорту «" + this._passportTextbox.Text +
+                            "» доступ к бюллетеню на дистанционном электронном голосовании НЕ ПРЕДОСТАВЛЯЛСЯ";
+                string notFoundText = "Паспорт «" + this._passportTextbox.Text +
+                        "» в списке участников дистанционного голосования НЕ НАЙДЕН";
+
+                SQLiteConnection connection = new SQLiteConnection(connectionString);
+
+                connection.Open();
+
+                SQLiteDataAdapter sqLiteDataAdapter = new SQLiteDataAdapter(new SQLiteCommand(commandText, connection));
+
+                DataTable Table = new DataTable();
+                DataRowCollection rows = Table.Rows;
+                DataTable rowsTable = new DataTable();
+
+                sqLiteDataAdapter.Fill(Table);
+
+                if (rows.Count > 0)
+                {
+                    PassVerification(rowsTable, providedText, notProvidedText);
+                }
+                else
+                {
+                    textResult.Text = notFoundText;
+                }
+
+                connection.Close();
+            }
+            catch (SQLiteException erorException)
+            {
+                if (erorException.ErrorCode != 1)
+                    return;
+
+                int number = (int)MessageBox.Show("Файл db.sqlite не найден. Положите файл в папку вместе с exe.");
+            }
+        }
+
+        private void PassVerification(DataTable rowsTable, string providedText, string notProvidedText)
+        {
+            if (Convert.ToBoolean(rowsTable[0].ItemArray[1]))
+                textResult.Text = providedText;
+            else
+                textResult.Text = notProvidedText;
         }
 
         private string FormatText(string text)
@@ -99,6 +111,11 @@ namespace CleanCode
         {
             throw new NotImplementedException();
         }
+    }
+
+    class CellRow
+    {
+        public string Text;
     }
 
     class PasportTextbox
